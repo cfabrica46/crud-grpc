@@ -24,4 +24,10 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
+	pb.RegisterChatServiceServer(grpcServer, &chatServer{})
+
+	if err := grpcServer.Serve(l); err != nil {
+		log.Fatal(err)
+	}
+
 }
