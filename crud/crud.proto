@@ -1,0 +1,23 @@
+syntax = "proto3";
+option go_package = "/crud";
+package crud;
+
+message User{
+    int32 ID = 1;
+    string Username = 2;
+    string Password = 3;
+    string Role = 4;
+}
+
+message Message{
+    string Body = 1;
+}
+
+service CrudService{
+
+    rpc GetUser (User) returns (User) {}
+    rpc GetUsers (User) returns (stream User) {}
+    rpc AddUser (User) returns (Message) {}
+    rpc DeleteUser (User) returns (Message) {}
+
+}
