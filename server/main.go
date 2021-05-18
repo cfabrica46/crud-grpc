@@ -9,6 +9,7 @@ import (
 	pb "github.com/cfabrica46/crud-grpc/crud"
 	"github.com/cfabrica46/crud-grpc/server/database"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type crudServer struct {
@@ -23,7 +24,13 @@ func main() {
 	}
 	defer l.Close()
 
-	grpcServer := grpc.NewServer()
+	creds, err := credentials.NewServerTLSFromFile("service.pem", "service.key")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	grpcServer := grpc.NewServer(grpc.Creds(creds))
 
 	pb.RegisterCrudServiceServer(grpcServer, &crudServer{})
 

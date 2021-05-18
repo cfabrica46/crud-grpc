@@ -1,20 +1,30 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 
 	"github.com/cfabrica46/crud-grpc/client/requests"
 	pb "github.com/cfabrica46/crud-grpc/crud"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
 
 	log.SetFlags(log.Lshortfile)
 
-	conn, err := grpc.Dial("localhost:8080", grpc.WithBlock(), grpc.WithInsecure())
+	config, err := getConfig()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	conn, err := grpc.Dial("localhost:8080", grpc.WithTransportCredentials(credentials.NewTLS(config)))
 
 	if err != nil {
 		log.Fatal(err)
@@ -156,5 +166,25 @@ func loopIntoProfile(client pb.CrudServiceClient, id int32, exit *bool) (err err
 		fmt.Println("Seleccione una opción válida")
 
 	}
+	return
+}
+
+func getConfig() (config *tls.Config, err error) {
+
+	b, err := ioutil.ReadFile("ca.cert")
+	if err != nil {
+		return
+	}
+
+	cp := x509.NewCertPool()
+	if !cp.AppendCertsFromPEM(b) {
+		return
+	}
+
+	config = &tls.Config{
+		InsecureSkipVerify: false,
+		RootCAs:            cp,
+	}
+
 	return
 }
