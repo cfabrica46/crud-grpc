@@ -44,16 +44,20 @@ func main() {
 
 func (s *crudServer) GetUser(ctx context.Context, user *pb.User) (*pb.User, error) {
 
+	var userAux *pb.User
+
 	row := database.DB.QueryRow("SELECT users.id,users.role FROM users WHERE users.username = $1 AND users.password = $2", user.Username, user.Password)
-	err := row.Scan(&user.ID, &user.Role)
+	err := row.Scan(&userAux.ID, &userAux.Role)
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return userAux, nil
 }
 
 func (s *crudServer) GetUsers(user *pb.User, stream pb.CrudService_GetUsersServer) error {
+
+	var userAux *pb.User
 
 	rows, err := database.DB.Query("SELECT users.id,users.username,users.role FROM users")
 	if err != nil {
@@ -61,12 +65,12 @@ func (s *crudServer) GetUsers(user *pb.User, stream pb.CrudService_GetUsersServe
 	}
 
 	for rows.Next() {
-		err = rows.Scan(&user.ID, &user.Username, &user.Role)
+		err = rows.Scan(&userAux.ID, &userAux.Username, &userAux.Role)
 		if err != nil {
 			return err
 		}
 
-		if err = stream.Send(user); err != nil {
+		if err = stream.Send(userAux); err != nil {
 			return err
 		}
 	}
